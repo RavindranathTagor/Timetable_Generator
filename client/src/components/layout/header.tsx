@@ -1,48 +1,42 @@
 import { Link } from "wouter";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ClipboardList, Home, FolderOpen, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const Header = () => {
+  const { data: activeTimetable } = useQuery({
+    queryKey: ["/api/timetables/active"],
+  });
+
   return (
     <header className="bg-primary text-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <h1 className="text-xl font-bold">TaskMaster</h1>
+          <h1 className="text-xl font-bold">IISERB Timetable Generator</h1>
+          {activeTimetable && (
+            <span className="ml-4 bg-secondary text-primary text-xs px-2 py-1 rounded">
+              {activeTimetable.semester}
+            </span>
+          )}
         </div>
         <nav>
-          <ul className="flex space-x-6 items-center">
+          <ul className="flex space-x-6">
             <li>
               <Link href="/">
-                <div className="flex items-center hover:text-secondary">
-                  <Home className="w-4 h-4 mr-1" />
-                  <span className="hidden md:inline">Dashboard</span>
-                </div>
+                <a className="hover:text-secondary">Dashboard</a>
               </Link>
             </li>
             <li>
-              <Link href="/tasks">
-                <div className="flex items-center hover:text-secondary">
-                  <ClipboardList className="w-4 h-4 mr-1" />
-                  <span className="hidden md:inline">Tasks</span>
-                </div>
+              <Link href="/generate">
+                <a className="hover:text-secondary">Generate</a>
               </Link>
             </li>
             <li>
-              <Link href="/projects">
-                <div className="flex items-center hover:text-secondary">
-                  <FolderOpen className="w-4 h-4 mr-1" />
-                  <span className="hidden md:inline">Projects</span>
-                </div>
+              <Link href="/constraints">
+                <a className="hover:text-secondary">Constraints</a>
               </Link>
             </li>
             <li>
-              <Link href="/profile">
-                <div className="flex items-center hover:text-secondary">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs bg-secondary text-primary">AU</AvatarFallback>
-                  </Avatar>
-                  <span className="hidden md:inline ml-2">Profile</span>
-                </div>
+              <Link href="/settings">
+                <a className="hover:text-secondary">Settings</a>
               </Link>
             </li>
           </ul>

@@ -1,363 +1,419 @@
 import {
-  type Task, type InsertTask,
+  type Course, type InsertCourse,
+  type Instructor, type InsertInstructor,
+  type Classroom, type InsertClassroom,
+  type ScheduledClass, type InsertScheduledClass,
+  type Timetable, type InsertTimetable,
+  type Constraint, type InsertConstraint,
   type User, type InsertUser,
-  type Project, type InsertProject,
-  type Comment, type InsertComment
+  courses, instructors, classrooms, scheduledClasses, timetables, constraints, users
 } from "@shared/schema";
 
+// Interface for storage operations
 export interface IStorage {
   // User operations
-  getUsers(): Promise<User[]>;
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
-  deleteUser(id: number): Promise<void>;
 
-  // Task operations
-  getTasks(): Promise<Task[]>;
-  getTask(id: number): Promise<Task | undefined>;
-  getTasksByProject(projectId: number): Promise<Task[]>;
-  getTasksByUser(userId: number): Promise<Task[]>;
-  createTask(task: InsertTask): Promise<Task>;
-  updateTask(id: number, task: Partial<InsertTask>): Promise<Task>;
-  deleteTask(id: number): Promise<void>;
+  // Course operations
+  getCourses(): Promise<Course[]>;
+  getCourse(id: number): Promise<Course | undefined>;
+  getCourseByCode(code: string): Promise<Course | undefined>;
+  createCourse(course: InsertCourse): Promise<Course>;
+  updateCourse(id: number, course: Partial<InsertCourse>): Promise<Course>;
+  deleteCourse(id: number): Promise<void>;
 
-  // Project operations
-  getProjects(): Promise<Project[]>;
-  getProject(id: number): Promise<Project | undefined>;
-  getProjectsByUser(userId: number): Promise<Project[]>;
-  createProject(project: InsertProject): Promise<Project>;
-  updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
-  deleteProject(id: number): Promise<void>;
+  // Instructor operations
+  getInstructors(): Promise<Instructor[]>;
+  getInstructor(id: number): Promise<Instructor | undefined>;
+  createInstructor(instructor: InsertInstructor): Promise<Instructor>;
+  updateInstructor(id: number, instructor: Partial<InsertInstructor>): Promise<Instructor>;
+  deleteInstructor(id: number): Promise<void>;
 
-  // Comment operations
-  getComments(): Promise<Comment[]>;
-  getComment(id: number): Promise<Comment | undefined>;
-  getCommentsByTask(taskId: number): Promise<Comment[]>;
-  createComment(comment: InsertComment): Promise<Comment>;
-  updateComment(id: number, comment: Partial<InsertComment>): Promise<Comment>;
-  deleteComment(id: number): Promise<void>;
+  // Classroom operations
+  getClassrooms(): Promise<Classroom[]>;
+  getClassroom(id: number): Promise<Classroom | undefined>;
+  createClassroom(classroom: InsertClassroom): Promise<Classroom>;
+  updateClassroom(id: number, classroom: Partial<InsertClassroom>): Promise<Classroom>;
+  deleteClassroom(id: number): Promise<void>;
+
+  // Scheduled class operations
+  getScheduledClasses(): Promise<ScheduledClass[]>;
+  getScheduledClassesByTimetable(timetableId: number): Promise<ScheduledClass[]>;
+  createScheduledClass(scheduledClass: InsertScheduledClass): Promise<ScheduledClass>;
+  updateScheduledClass(id: number, scheduledClass: Partial<InsertScheduledClass>): Promise<ScheduledClass>;
+  deleteScheduledClass(id: number): Promise<void>;
+  deleteScheduledClassesByTimetable(timetableId: number): Promise<void>;
+
+  // Timetable operations
+  getTimetables(): Promise<Timetable[]>;
+  getTimetable(id: number): Promise<Timetable | undefined>;
+  getActiveTimetable(): Promise<Timetable | undefined>;
+  createTimetable(timetable: InsertTimetable): Promise<Timetable>;
+  updateTimetable(id: number, timetable: Partial<InsertTimetable>): Promise<Timetable>;
+  deleteTimetable(id: number): Promise<void>;
+  setActiveTimetable(id: number): Promise<Timetable>;
+
+  // Constraint operations
+  getConstraints(): Promise<Constraint[]>;
+  getConstraint(id: number): Promise<Constraint | undefined>;
+  createConstraint(constraint: InsertConstraint): Promise<Constraint>;
+  updateConstraint(id: number, constraint: Partial<InsertConstraint>): Promise<Constraint>;
+  deleteConstraint(id: number): Promise<void>;
 }
 
+// In-memory storage implementation
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
-  private tasks: Map<number, Task>;
-  private projects: Map<number, Project>;
-  private comments: Map<number, Comment>;
-
+  private courses: Map<number, Course>;
+  private instructors: Map<number, Instructor>;
+  private classrooms: Map<number, Classroom>;
+  private scheduledClasses: Map<number, ScheduledClass>;
+  private timetables: Map<number, Timetable>;
+  private constraints: Map<number, Constraint>;
+  
   private currentUserId: number;
-  private currentTaskId: number;
-  private currentProjectId: number;
-  private currentCommentId: number;
+  private currentCourseId: number;
+  private currentInstructorId: number;
+  private currentClassroomId: number;
+  private currentScheduledClassId: number;
+  private currentTimetableId: number;
+  private currentConstraintId: number;
 
   constructor() {
     this.users = new Map();
-    this.tasks = new Map();
-    this.projects = new Map();
-    this.comments = new Map();
+    this.courses = new Map();
+    this.instructors = new Map();
+    this.classrooms = new Map();
+    this.scheduledClasses = new Map();
+    this.timetables = new Map();
+    this.constraints = new Map();
     
     this.currentUserId = 1;
-    this.currentTaskId = 1;
-    this.currentProjectId = 1;
-    this.currentCommentId = 1;
+    this.currentCourseId = 1;
+    this.currentInstructorId = 1;
+    this.currentClassroomId = 1;
+    this.currentScheduledClassId = 1;
+    this.currentTimetableId = 1;
+    this.currentConstraintId = 1;
     
-    // Initialize with sample data
     this.initializeSampleData();
   }
-  
+
+  // Initialize some sample data
   private initializeSampleData() {
-    // Add a sample user
-    this.createUser({
-      username: "admin",
-      email: "admin@example.com",
-      password: "password123",
-      firstName: "Admin",
-      lastName: "User",
-      role: "admin"
-    });
+    // Sample instructors
+    const sampleInstructors: InsertInstructor[] = [
+      { name: "Dr. P. Verma", department: "CHM", email: "p.verma@iiserb.ac.in" },
+      { name: "Dr. R. Sharma", department: "PHY", email: "r.sharma@iiserb.ac.in" },
+      { name: "Dr. S. Kumar", department: "PHY", email: "s.kumar@iiserb.ac.in" },
+      { name: "Dr. A. Gupta", department: "PHY", email: "a.gupta@iiserb.ac.in" },
+      { name: "Dr. M. Patel", department: "PHY", email: "m.patel@iiserb.ac.in" },
+      { name: "Dr. L. Singh", department: "PHY", email: "l.singh@iiserb.ac.in" },
+      { name: "Dr. K. Mishra", department: "CHM", email: "k.mishra@iiserb.ac.in" },
+      { name: "Dr. J. Roy", department: "CHM", email: "j.roy@iiserb.ac.in" }
+    ];
     
-    this.createUser({
-      username: "user1",
-      email: "user1@example.com",
-      password: "password123",
-      firstName: "Regular",
-      lastName: "User",
-      role: "user"
-    });
+    sampleInstructors.forEach(instructor => this.createInstructor(instructor));
     
-    // Add sample projects
-    this.createProject({
-      name: "Website Redesign",
-      description: "Redesign the company website with new branding",
-      ownerId: 1
-    });
+    // Sample classrooms
+    const sampleClassrooms: InsertClassroom[] = [
+      { name: "L1", building: "L1", capacity: 100, hasProjector: true, hasComputers: false },
+      { name: "L2", building: "L2", capacity: 100, hasProjector: true, hasComputers: false },
+      { name: "L3", building: "L3", capacity: 100, hasProjector: true, hasComputers: false },
+      { name: "AB1-304", building: "AB1", capacity: 40, hasProjector: true, hasComputers: false },
+      { name: "AB2-104", building: "AB2", capacity: 30, hasProjector: true, hasComputers: false },
+      { name: "AB3-201", building: "AB3", capacity: 30, hasProjector: true, hasComputers: false },
+      { name: "AB1-102", building: "AB1", capacity: 35, hasProjector: true, hasComputers: false },
+      { name: "AB2-201", building: "AB2", capacity: 35, hasProjector: true, hasComputers: false },
+      { name: "Lab 3", building: "Lab 3", capacity: 25, hasProjector: true, hasComputers: true },
+      { name: "AB1-401", building: "AB1", capacity: 35, hasProjector: true, hasComputers: false },
+      { name: "AB1-301", building: "AB1", capacity: 35, hasProjector: true, hasComputers: false },
+      { name: "AB2-301", building: "AB2", capacity: 30, hasProjector: true, hasComputers: false },
+      { name: "Lab 2", building: "Lab 2", capacity: 25, hasProjector: true, hasComputers: true },
+      { name: "AB1-203", building: "AB1", capacity: 30, hasProjector: true, hasComputers: false },
+      { name: "Lab 4", building: "Lab 4", capacity: 25, hasProjector: true, hasComputers: true },
+      { name: "AB2-205", building: "AB2", capacity: 30, hasProjector: true, hasComputers: false },
+      { name: "AB1-405", building: "AB1", capacity: 35, hasProjector: true, hasComputers: false },
+      { name: "AB1-403", building: "AB1", capacity: 35, hasProjector: true, hasComputers: false },
+      { name: "AB2-102", building: "AB2", capacity: 30, hasProjector: true, hasComputers: false },
+      { name: "AB2-204", building: "AB2", capacity: 30, hasProjector: true, hasComputers: false },
+      { name: "Lab 1", building: "Lab 1", capacity: 25, hasProjector: true, hasComputers: true }
+    ];
     
-    this.createProject({
-      name: "Mobile App Development",
-      description: "Develop a mobile app for customer engagement",
-      ownerId: 1
-    });
+    sampleClassrooms.forEach(classroom => this.createClassroom(classroom));
     
-    // Add sample tasks
-    this.createTask({
-      title: "Design Homepage",
-      description: "Create wireframes and mockups for the new homepage",
-      status: "todo",
-      priority: "high",
-      dueDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week from now
-      userId: 2,
-      projectId: 1,
-      isCompleted: false
-    });
+    // Sample courses
+    const sampleCourses: InsertCourse[] = [
+      { code: "CHM 111", name: "General Chemistry", department: "CHM", instructorId: 1, credits: 3, capacity: 50 },
+      { code: "PHY 101", name: "Mechanics", department: "PHY", instructorId: 2, credits: 4, capacity: 50 },
+      { code: "PHY 104", name: "Electromagnetism", department: "PHY", instructorId: 3, credits: 4, capacity: 40 },
+      { code: "PHY 306", name: "Quantum Physics I", department: "PHY", instructorId: 4, credits: 3, capacity: 30 },
+      { code: "PHY 407", name: "Solid State Physics", department: "PHY", instructorId: 5, credits: 3, capacity: 25 },
+      { code: "PHY 503", name: "Advanced Lab Techniques", department: "PHY", instructorId: 6, credits: 2, capacity: 20 },
+      { code: "CHM 206", name: "Organic Chemistry", department: "CHM", instructorId: 7, credits: 3, capacity: 40 },
+      { code: "CHM 252", name: "Analytical Methods", department: "CHM", instructorId: 8, credits: 3, capacity: 30 }
+    ];
     
-    this.createTask({
-      title: "Implement User Authentication",
-      description: "Set up user authentication and authorization system",
-      status: "in_progress",
-      priority: "high",
-      dueDate: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-      userId: 1,
-      projectId: 1,
-      isCompleted: false
-    });
+    sampleCourses.forEach(course => this.createCourse(course));
     
-    this.createTask({
-      title: "Create Database Schema",
-      description: "Design and implement the database schema for the app",
-      status: "todo",
-      priority: "medium",
-      dueDate: new Date(new Date().getTime() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-      userId: 1,
-      projectId: 2,
-      isCompleted: false
-    });
-    
-    // Add sample comments
-    this.createComment({
-      content: "I've started working on the mockups. Will share progress by tomorrow.",
-      taskId: 1,
-      userId: 2
-    });
-    
-    this.createComment({
-      content: "Let's use Firebase for authentication to save time.",
-      taskId: 2,
-      userId: 1
+    // Create a default timetable
+    this.createTimetable({
+      name: "2024-2025-II Semester",
+      semester: "2024-2025-II",
+      isActive: true
     });
   }
-  
+
   // User operations
-  async getUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
-  }
-  
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
-  
+
   async getUserByUsername(username: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
-      if (user.username === username) {
-        return user;
-      }
-    }
-    return undefined;
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username,
+    );
   }
-  
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
-      if (user.email === email) {
-        return user;
-      }
-    }
-    return undefined;
-  }
-  
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const now = new Date();
-    const user: User = { ...insertUser, id, createdAt: now };
+    const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
   }
-  
-  async updateUser(id: number, userUpdate: Partial<InsertUser>): Promise<User> {
-    const existingUser = this.users.get(id);
-    if (!existingUser) {
-      throw new Error(`User with id ${id} not found`);
-    }
+
+  // Course operations
+  async getCourses(): Promise<Course[]> {
+    return Array.from(this.courses.values());
+  }
+
+  async getCourse(id: number): Promise<Course | undefined> {
+    return this.courses.get(id);
+  }
+
+  async getCourseByCode(code: string): Promise<Course | undefined> {
+    return Array.from(this.courses.values()).find(course => course.code === code);
+  }
+
+  async createCourse(insertCourse: InsertCourse): Promise<Course> {
+    const id = this.currentCourseId++;
+    const course: Course = { ...insertCourse, id };
+    this.courses.set(id, course);
+    return course;
+  }
+
+  async updateCourse(id: number, courseUpdate: Partial<InsertCourse>): Promise<Course> {
+    const course = this.courses.get(id);
+    if (!course) throw new Error(`Course with id ${id} not found`);
+    const updatedCourse = { ...course, ...courseUpdate };
+    this.courses.set(id, updatedCourse);
+    return updatedCourse;
+  }
+
+  async deleteCourse(id: number): Promise<void> {
+    if (!this.courses.has(id)) throw new Error(`Course with id ${id} not found`);
+    this.courses.delete(id);
+  }
+
+  // Instructor operations
+  async getInstructors(): Promise<Instructor[]> {
+    return Array.from(this.instructors.values());
+  }
+
+  async getInstructor(id: number): Promise<Instructor | undefined> {
+    return this.instructors.get(id);
+  }
+
+  async createInstructor(insertInstructor: InsertInstructor): Promise<Instructor> {
+    const id = this.currentInstructorId++;
+    const instructor: Instructor = { ...insertInstructor, id };
+    this.instructors.set(id, instructor);
+    return instructor;
+  }
+
+  async updateInstructor(id: number, instructorUpdate: Partial<InsertInstructor>): Promise<Instructor> {
+    const instructor = this.instructors.get(id);
+    if (!instructor) throw new Error(`Instructor with id ${id} not found`);
+    const updatedInstructor = { ...instructor, ...instructorUpdate };
+    this.instructors.set(id, updatedInstructor);
+    return updatedInstructor;
+  }
+
+  async deleteInstructor(id: number): Promise<void> {
+    if (!this.instructors.has(id)) throw new Error(`Instructor with id ${id} not found`);
+    this.instructors.delete(id);
+  }
+
+  // Classroom operations
+  async getClassrooms(): Promise<Classroom[]> {
+    return Array.from(this.classrooms.values());
+  }
+
+  async getClassroom(id: number): Promise<Classroom | undefined> {
+    return this.classrooms.get(id);
+  }
+
+  async createClassroom(insertClassroom: InsertClassroom): Promise<Classroom> {
+    const id = this.currentClassroomId++;
+    const classroom: Classroom = { ...insertClassroom, id };
+    this.classrooms.set(id, classroom);
+    return classroom;
+  }
+
+  async updateClassroom(id: number, classroomUpdate: Partial<InsertClassroom>): Promise<Classroom> {
+    const classroom = this.classrooms.get(id);
+    if (!classroom) throw new Error(`Classroom with id ${id} not found`);
+    const updatedClassroom = { ...classroom, ...classroomUpdate };
+    this.classrooms.set(id, updatedClassroom);
+    return updatedClassroom;
+  }
+
+  async deleteClassroom(id: number): Promise<void> {
+    if (!this.classrooms.has(id)) throw new Error(`Classroom with id ${id} not found`);
+    this.classrooms.delete(id);
+  }
+
+  // Scheduled class operations
+  async getScheduledClasses(): Promise<ScheduledClass[]> {
+    return Array.from(this.scheduledClasses.values());
+  }
+
+  async getScheduledClassesByTimetable(timetableId: number): Promise<ScheduledClass[]> {
+    return Array.from(this.scheduledClasses.values())
+      .filter(scheduledClass => scheduledClass.timetableId === timetableId);
+  }
+
+  async createScheduledClass(insertScheduledClass: InsertScheduledClass): Promise<ScheduledClass> {
+    const id = this.currentScheduledClassId++;
+    const scheduledClass: ScheduledClass = { ...insertScheduledClass, id };
+    this.scheduledClasses.set(id, scheduledClass);
+    return scheduledClass;
+  }
+
+  async updateScheduledClass(id: number, scheduledClassUpdate: Partial<InsertScheduledClass>): Promise<ScheduledClass> {
+    const scheduledClass = this.scheduledClasses.get(id);
+    if (!scheduledClass) throw new Error(`Scheduled class with id ${id} not found`);
+    const updatedScheduledClass = { ...scheduledClass, ...scheduledClassUpdate };
+    this.scheduledClasses.set(id, updatedScheduledClass);
+    return updatedScheduledClass;
+  }
+
+  async deleteScheduledClass(id: number): Promise<void> {
+    if (!this.scheduledClasses.has(id)) throw new Error(`Scheduled class with id ${id} not found`);
+    this.scheduledClasses.delete(id);
+  }
+
+  async deleteScheduledClassesByTimetable(timetableId: number): Promise<void> {
+    const classesToDelete = Array.from(this.scheduledClasses.values())
+      .filter(scheduledClass => scheduledClass.timetableId === timetableId);
     
-    const updatedUser = { ...existingUser, ...userUpdate };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    for (const scheduledClass of classesToDelete) {
+      this.scheduledClasses.delete(scheduledClass.id);
+    }
   }
-  
-  async deleteUser(id: number): Promise<void> {
-    this.users.delete(id);
+
+  // Timetable operations
+  async getTimetables(): Promise<Timetable[]> {
+    return Array.from(this.timetables.values());
   }
-  
-  // Task operations
-  async getTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values());
+
+  async getTimetable(id: number): Promise<Timetable | undefined> {
+    return this.timetables.get(id);
   }
-  
-  async getTask(id: number): Promise<Task | undefined> {
-    return this.tasks.get(id);
+
+  async getActiveTimetable(): Promise<Timetable | undefined> {
+    return Array.from(this.timetables.values()).find(timetable => timetable.isActive);
   }
-  
-  async getTasksByProject(projectId: number): Promise<Task[]> {
-    return Array.from(this.tasks.values()).filter(task => task.projectId === projectId);
-  }
-  
-  async getTasksByUser(userId: number): Promise<Task[]> {
-    return Array.from(this.tasks.values()).filter(task => task.userId === userId);
-  }
-  
-  async createTask(insertTask: InsertTask): Promise<Task> {
-    const id = this.currentTaskId++;
+
+  async createTimetable(insertTimetable: InsertTimetable): Promise<Timetable> {
+    const id = this.currentTimetableId++;
     const now = new Date();
-    const task: Task = { 
-      ...insertTask, 
-      id, 
-      createdAt: now, 
-      updatedAt: now
-    };
-    this.tasks.set(id, task);
-    return task;
-  }
-  
-  async updateTask(id: number, taskUpdate: Partial<InsertTask>): Promise<Task> {
-    const existingTask = this.tasks.get(id);
-    if (!existingTask) {
-      throw new Error(`Task with id ${id} not found`);
+    const timetable: Timetable = { ...insertTimetable, id, createdAt: now };
+    
+    // If this timetable is set as active, deactivate all others
+    if (timetable.isActive) {
+      for (const [existingId, existingTimetable] of this.timetables.entries()) {
+        if (existingTimetable.isActive) {
+          this.timetables.set(existingId, { ...existingTimetable, isActive: false });
+        }
+      }
     }
     
-    const now = new Date();
-    const updatedTask = { 
-      ...existingTask, 
-      ...taskUpdate, 
-      updatedAt: now 
-    };
-    this.tasks.set(id, updatedTask);
-    return updatedTask;
+    this.timetables.set(id, timetable);
+    return timetable;
   }
-  
-  async deleteTask(id: number): Promise<void> {
-    // First delete all comments related to this task
-    const commentsToDelete = Array.from(this.comments.values())
-      .filter(comment => comment.taskId === id)
-      .map(comment => comment.id);
+
+  async updateTimetable(id: number, timetableUpdate: Partial<InsertTimetable>): Promise<Timetable> {
+    const timetable = this.timetables.get(id);
+    if (!timetable) throw new Error(`Timetable with id ${id} not found`);
     
-    for (const commentId of commentsToDelete) {
-      this.comments.delete(commentId);
+    const updatedTimetable = { ...timetable, ...timetableUpdate };
+    
+    // If this timetable is being set as active, deactivate all others
+    if (timetableUpdate.isActive) {
+      for (const [existingId, existingTimetable] of this.timetables.entries()) {
+        if (existingId !== id && existingTimetable.isActive) {
+          this.timetables.set(existingId, { ...existingTimetable, isActive: false });
+        }
+      }
     }
     
-    // Then delete the task
-    this.tasks.delete(id);
+    this.timetables.set(id, updatedTimetable);
+    return updatedTimetable;
   }
-  
-  // Project operations
-  async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
+
+  async deleteTimetable(id: number): Promise<void> {
+    if (!this.timetables.has(id)) throw new Error(`Timetable with id ${id} not found`);
+    this.timetables.delete(id);
+    await this.deleteScheduledClassesByTimetable(id);
   }
-  
-  async getProject(id: number): Promise<Project | undefined> {
-    return this.projects.get(id);
-  }
-  
-  async getProjectsByUser(userId: number): Promise<Project[]> {
-    return Array.from(this.projects.values()).filter(project => project.ownerId === userId);
-  }
-  
-  async createProject(insertProject: InsertProject): Promise<Project> {
-    const id = this.currentProjectId++;
-    const now = new Date();
-    const project: Project = { 
-      ...insertProject, 
-      id, 
-      createdAt: now, 
-      updatedAt: now
-    };
-    this.projects.set(id, project);
-    return project;
-  }
-  
-  async updateProject(id: number, projectUpdate: Partial<InsertProject>): Promise<Project> {
-    const existingProject = this.projects.get(id);
-    if (!existingProject) {
-      throw new Error(`Project with id ${id} not found`);
+
+  async setActiveTimetable(id: number): Promise<Timetable> {
+    const timetable = this.timetables.get(id);
+    if (!timetable) throw new Error(`Timetable with id ${id} not found`);
+    
+    // Deactivate all timetables
+    for (const [existingId, existingTimetable] of this.timetables.entries()) {
+      if (existingTimetable.isActive) {
+        this.timetables.set(existingId, { ...existingTimetable, isActive: false });
+      }
     }
     
-    const now = new Date();
-    const updatedProject = { 
-      ...existingProject, 
-      ...projectUpdate, 
-      updatedAt: now 
-    };
-    this.projects.set(id, updatedProject);
-    return updatedProject;
+    // Activate the selected timetable
+    const activeTimetable = { ...timetable, isActive: true };
+    this.timetables.set(id, activeTimetable);
+    return activeTimetable;
   }
-  
-  async deleteProject(id: number): Promise<void> {
-    // First get all tasks associated with this project
-    const tasksToDelete = Array.from(this.tasks.values())
-      .filter(task => task.projectId === id)
-      .map(task => task.id);
-    
-    // Delete each task (which will also delete associated comments)
-    for (const taskId of tasksToDelete) {
-      await this.deleteTask(taskId);
-    }
-    
-    // Then delete the project
-    this.projects.delete(id);
+
+  // Constraint operations
+  async getConstraints(): Promise<Constraint[]> {
+    return Array.from(this.constraints.values());
   }
-  
-  // Comment operations
-  async getComments(): Promise<Comment[]> {
-    return Array.from(this.comments.values());
+
+  async getConstraint(id: number): Promise<Constraint | undefined> {
+    return this.constraints.get(id);
   }
-  
-  async getComment(id: number): Promise<Comment | undefined> {
-    return this.comments.get(id);
+
+  async createConstraint(insertConstraint: InsertConstraint): Promise<Constraint> {
+    const id = this.currentConstraintId++;
+    const constraint: Constraint = { ...insertConstraint, id };
+    this.constraints.set(id, constraint);
+    return constraint;
   }
-  
-  async getCommentsByTask(taskId: number): Promise<Comment[]> {
-    return Array.from(this.comments.values())
-      .filter(comment => comment.taskId === taskId)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+  async updateConstraint(id: number, constraintUpdate: Partial<InsertConstraint>): Promise<Constraint> {
+    const constraint = this.constraints.get(id);
+    if (!constraint) throw new Error(`Constraint with id ${id} not found`);
+    const updatedConstraint = { ...constraint, ...constraintUpdate };
+    this.constraints.set(id, updatedConstraint);
+    return updatedConstraint;
   }
-  
-  async createComment(insertComment: InsertComment): Promise<Comment> {
-    const id = this.currentCommentId++;
-    const now = new Date();
-    const comment: Comment = { 
-      ...insertComment, 
-      id, 
-      createdAt: now
-    };
-    this.comments.set(id, comment);
-    return comment;
-  }
-  
-  async updateComment(id: number, commentUpdate: Partial<InsertComment>): Promise<Comment> {
-    const existingComment = this.comments.get(id);
-    if (!existingComment) {
-      throw new Error(`Comment with id ${id} not found`);
-    }
-    
-    const updatedComment = { 
-      ...existingComment, 
-      ...commentUpdate
-    };
-    this.comments.set(id, updatedComment);
-    return updatedComment;
-  }
-  
-  async deleteComment(id: number): Promise<void> {
-    this.comments.delete(id);
+
+  async deleteConstraint(id: number): Promise<void> {
+    if (!this.constraints.has(id)) throw new Error(`Constraint with id ${id} not found`);
+    this.constraints.delete(id);
   }
 }
 

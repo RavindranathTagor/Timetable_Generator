@@ -83,13 +83,6 @@ const GenerateTimetableForm = ({
     },
   });
   
-  const generateTimetableMutation = useMutation({
-    mutationFn: async (data: { name: string, semester: string }) => {
-      const response = await apiRequest("POST", "/api/generate-timetable", data);
-      return response.json();
-    },
-  });
-  
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (courses.length === 0) {
       toast({
@@ -121,13 +114,33 @@ const GenerateTimetableForm = ({
     setGenerating(true);
     
     try {
-      // Use server-side generation which will create a timetable and all scheduled classes
-      const timetable = await generateTimetableMutation.mutateAsync({
-        name: values.name,
-        semester: values.semester
+      // Step 1: Create a new timetable
+      const timetable = await createTimetableMutation.mutateAsync(values);
+      
+      // Step 2: Filter courses by selected departments if any
+      let filteredCourses = courses;
+      if (values.selectedDepartments && values.selectedDepartments.length > 0) {
+        filteredCourses = courses.filter(course => 
+          values.selectedDepartments!.includes(course.department)
+        );
+      }
+      
+      // Step 3: Generate timetable
+      const generatedClasses = await generateTimetable({
+        courses: filteredCourses,
+        instructors,
+        classrooms,
+        constraints,
+        timetableId: timetable.id,
       });
       
-      // Make timetable active if requested
+      // Step 4: Save generated scheduled classes
+      await createClassMutation.mutateAsync({
+        timetableId: timetable.id,
+        classes: generatedClasses,
+      });
+      
+      // Step 5: Make timetable active if requested
       if (values.makeActive) {
         await activateTimetableMutation.mutateAsync(timetable.id);
       }
@@ -136,11 +149,10 @@ const GenerateTimetableForm = ({
       queryClient.invalidateQueries({ queryKey: ["/api/timetables"] });
       queryClient.invalidateQueries({ queryKey: ["/api/timetables/active"] });
       queryClient.invalidateQueries({ queryKey: ["/api/scheduled-classes"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/timetables/withClasses"] });
       
       toast({
         title: "Timetable Generated",
-        description: `Successfully generated timetable "${timetable.name}". All classes have been scheduled.`,
+        description: `Successfully generated timetable "${timetable.name}" with ${generatedClasses.length} scheduled classes.`,
       });
       
       form.reset();
