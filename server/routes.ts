@@ -391,16 +391,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: false
       });
       
-      // Here is where a real timetable generation algorithm would run
-      // For this implementation, we'll return the created timetable without scheduled classes
+      // Get data needed for timetable generation
+      const courses = await storage.getCourses();
+      const instructors = await storage.getInstructors();
+      const classrooms = await storage.getClassrooms();
+      const constraints = await storage.getConstraints();
       
+      // Import the timetable generator
+      const { generateTimetable } = await import('../client/src/lib/timetable-generator');
+      
+      // Generate scheduled classes
+      const generatorOptions = {
+        courses,
+        instructors, 
+        classrooms,
+        constraints,
+        timetableId: timetable.id
+      };
+      
+      const scheduledClasses = await generateTimetable(generatorOptions);
+      
+      // Save all generated scheduled classes
+      for (const scheduledClass of scheduledClasses) {
+        await storage.createScheduledClass({
+          courseId: scheduledClass.courseId,
+          instructorId: scheduledClass.instructorId,
+          classroomId: scheduledClass.classroomId,
+          day: scheduledClass.day,
+          startTime: scheduledClass.startTime,
+          endTime: scheduledClass.endTime,
+          timetableId: timetable.id,
+          section: scheduledClass.section
+        });
+      }
+      
+      // Return the created timetable
       res.status(201).json(timetable);
     } catch (error) {
+      console.error("Timetable generation error:", error);
       res.status(500).json({ message: "Failed to generate timetable" });
     }
   });
 
-  // Timetable data endpoint - returns timetable with all related data
+  // Timetable data endpoint - returns timetable with all related data (legacy endpoint)
   app.get("/api/timetable-data/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -442,6 +475,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch timetable data" });
     }
   });
+  
+  // New endpoint - returns timetable with classes (TimetableWithClasses)
+  app.get("/api/timetables/withClasses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Get the timetable
+      const timetable = await storage.getTimetable(id);
+      if (!timetable) {
+        return res.status(404).json({ message: "Timetable not found" });
+      }
+      
+      // Get scheduled classes for this timetable
+      const scheduledClasses = await storage.getScheduledClassesByTimetable(id);
+      
+      // Get all courses, instructors, and classrooms for reference
+      const courses = await storage.getCourses();
+      const instructors = await storage.getInstructors();
+      const classrooms = await storage.getClassrooms();
+      
+      // Build detailed scheduled classes with referenced entities
+      const detailedClasses = scheduledClasses.map(scheduledClass => {
+        const course = courses.find(c => c.id === scheduledClass.courseId);
+        const instructor = instructors.find(i => i.id === scheduledClass.instructorId);
+        const classroom = classrooms.find(c => c.id === scheduledClass.classroomId);
+        
+        return {
+          ...scheduledClass,
+          course,
+          instructor,
+          classroom
+        };
+      });
+      
+      // Return complete timetable data
+      res.json({
+        ...timetable,
+        classes: detailedClasses
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch timetable with classes" });
+    }
+  });
+  
+  // Get active timetable with classes
+  app.get("/api/timetables/withClasses", async (req, res) => {
+    try {
+      // Get the active timetable
+      const timetable = await storage.getActiveTimetable();
+      if (!timetable) {
+        return res.status(404).json({ message: "No active timetable found" });
+      }
+      
+      // Get scheduled classes for this timetable
+      const scheduledClasses = await storage.getScheduledClassesByTimetable(timetable.id);
+      
+      // Get all courses, instructors, and classrooms for reference
+      const courses = await storage.getCourses();
+      const instructors = await storage.getInstructors();
+      const classrooms = await storage.getClassrooms();
+      
+      // Build detailed scheduled classes with referenced entities
+      const detailedClasses = scheduledClasses.map(scheduledClass => {
+        const course = courses.find(c => c.id === scheduledClass.courseId);
+        const instructor = instructors.find(i => i.id === scheduledClass.instructorId);
+        const classroom = classrooms.find(c => c.id === scheduledClass.classroomId);
+        
+        return {
+          ...scheduledClass,
+          course,
+          instructor,
+          classroom
+        };
+      });
+      
+      // Return complete timetable data
+      res.json({
+        ...timetable,
+        classes: detailedClasses
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch active timetable with classes" });
+    }
+  });
 
   // Check for timetable conflicts
   app.post("/api/check-conflicts", async (req, res) => {
@@ -455,26 +572,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get scheduled classes for this timetable
       const scheduledClasses = await storage.getScheduledClassesByTimetable(timetableId);
       
-      // Get all courses, instructors, and classrooms for reference
-      const courses = await storage.getCourses();
-      const instructors = await storage.getInstructors();
-      const classrooms = await storage.getClassrooms();
+      if (scheduledClasses.length === 0) {
+        return res.json({
+          hasConflicts: false,
+          conflicts: {
+            instructorConflicts: [],
+            classroomConflicts: [],
+            studentConflicts: []
+          }
+        });
+      }
       
-      // Check for conflicts
-      const conflicts = {
-        instructorConflicts: [],
-        classroomConflicts: [],
-        studentConflicts: []
-      };
+      // Import the conflict checker
+      const { checkConflicts } = await import('../client/src/lib/timetable-generator');
       
-      // In a real implementation, this would perform actual conflict detection
-      // For this implementation, we'll just return an empty conflicts object
+      // Check for conflicts using our implementation
+      const conflicts = checkConflicts(scheduledClasses);
       
+      // Return the conflicts
       res.json({
         hasConflicts: Object.values(conflicts).some(arr => arr.length > 0),
         conflicts
       });
     } catch (error) {
+      console.error("Conflict checking error:", error);
       res.status(500).json({ message: "Failed to check conflicts" });
     }
   });

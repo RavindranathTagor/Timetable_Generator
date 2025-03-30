@@ -11,10 +11,17 @@ type TimeSlot = typeof timeSlots[number];
 type WeekDay = typeof weekDays[number];
 type Section = typeof cseSections[number];
 
+// Custom time slots based on the screenshot (for future enhancement)
+export const customTimeSlots = [
+  "8:00-9:00", "9:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", 
+  "14:00-15:00", "15:00-16:00", "16:00-17:00", "17:00-18:00"
+];
+
 // Type for a class slot (day + time)
 interface ClassSlot {
   day: WeekDay;
   timeSlot: TimeSlot;
+  section?: Section; // Include section in the slot type
 }
 
 // Interface for the generator
@@ -363,14 +370,33 @@ export const checkConflicts = (scheduledClasses: ScheduledClass[]): {
     }
   }
   
-  // Student conflicts are more complex and would require student enrollment data
-  // This is a simplified version that assumes students take all courses in their department
-  const departmentSlots: Record<string, Record<string, ScheduledClass[]>> = {};
+  // Student conflicts check for section-based conflicts
+  // Students in the same section cannot be in multiple classes at once
+  const sectionSlots: Record<string, Record<string, ScheduledClass[]>> = {};
   
   for (const scheduledClass of scheduledClasses) {
-    // We need course information to get the department
-    // This would require joining with course data
-    // For now, we'll skip this part
+    // Skip if no section is assigned (shouldn't happen with CSE data)
+    if (!scheduledClass.section) continue;
+    
+    const section = scheduledClass.section;
+    const key = `${scheduledClass.day}-${scheduledClass.startTime}-${scheduledClass.endTime}`;
+    
+    if (!sectionSlots[section]) {
+      sectionSlots[section] = {};
+    }
+    
+    if (!sectionSlots[section][key]) {
+      sectionSlots[section][key] = [];
+    }
+    
+    sectionSlots[section][key].push(scheduledClass);
+    
+    if (sectionSlots[section][key].length > 1) {
+      studentConflicts.push({
+        section,
+        classes: sectionSlots[section][key]
+      });
+    }
   }
   
   return {

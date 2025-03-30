@@ -3,26 +3,38 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ClassSchedule from "@/components/ui/class-schedule";
 import DepartmentSchedule from "@/components/ui/department-schedule";
-import { Timetable } from "@shared/schema";
+import CSETimetableView from "@/components/ui/cse-timetable-view";
+import { Timetable, TimetableWithClasses } from "@shared/schema";
+import { exportTimetable } from "@/lib/export-utils";
 
 const Schedules = () => {
   const { data: activeTimetable, isLoading } = useQuery<Timetable>({
     queryKey: ["/api/timetables/active"],
   });
 
+  const { data: timetableWithClasses, isLoading: isLoadingClasses } = useQuery<TimetableWithClasses>({
+    queryKey: ["/api/timetables/withClasses", activeTimetable?.id],
+    enabled: !!activeTimetable,
+  });
+
   const { data: timetables } = useQuery<Timetable[]>({
     queryKey: ["/api/timetables"],
   });
+
+  const handleExport = (format: 'pdf' | 'csv' | 'image') => {
+    if (!timetableWithClasses) return;
+    exportTimetable(timetableWithClasses, format, `cse-timetable-${timetableWithClasses.name}`);
+  };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Schedules</CardTitle>
+          <CardTitle>CSE Timetable Schedules</CardTitle>
         </CardHeader>
         
         <CardContent>
-          {isLoading ? (
+          {isLoading || isLoadingClasses ? (
             <div className="text-center py-10">Loading timetable information...</div>
           ) : !activeTimetable ? (
             <div className="text-center py-10">
@@ -34,11 +46,21 @@ const Schedules = () => {
                 Active Timetable: {activeTimetable.name} ({activeTimetable.semester})
               </h2>
               
-              <Tabs defaultValue="department" className="w-full">
+              <Tabs defaultValue="cse" className="w-full">
                 <TabsList className="mb-4">
-                  <TabsTrigger value="department">Department-wise Faculty Schedule</TabsTrigger>
+                  <TabsTrigger value="cse">CSE Department Timetable</TabsTrigger>
+                  <TabsTrigger value="department">Faculty-wise Schedule</TabsTrigger>
                   <TabsTrigger value="class">Class-wise Schedule</TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="cse">
+                  {timetableWithClasses && (
+                    <CSETimetableView 
+                      timetable={timetableWithClasses} 
+                      onExport={handleExport}
+                    />
+                  )}
+                </TabsContent>
                 
                 <TabsContent value="department">
                   <DepartmentSchedule timetableId={activeTimetable.id} />

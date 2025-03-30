@@ -16,7 +16,7 @@ interface TimetableData {
   name: string;
   semester: string;
   isActive: boolean;
-  createdAt: string;
+  createdAt: Date | string;
   classes: ScheduledClassWithDetails[];
 }
 
