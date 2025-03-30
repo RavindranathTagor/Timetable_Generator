@@ -8,9 +8,10 @@ import { Department, departments } from "@shared/schema";
 interface ControlPanelProps {
   onGenerateClick: () => void;
   onExportClick: () => void;
+  onDepartmentChange?: (dept: Department | "all") => void;
 }
 
-const ControlPanel = ({ onGenerateClick, onExportClick }: ControlPanelProps) => {
+const ControlPanel = ({ onGenerateClick, onExportClick, onDepartmentChange }: ControlPanelProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedDepartment, setSelectedDepartment] = useState<Department | "all">("all");
@@ -24,6 +25,13 @@ const ControlPanel = ({ onGenerateClick, onExportClick }: ControlPanelProps) => 
     EES: "bg-[#ffe0cc]",
     CES: "bg-[#e6ccff]",
     ECO: "bg-[#ccffff]",
+  };
+  
+  const handleDepartmentChange = (dept: Department | "all") => {
+    setSelectedDepartment(dept);
+    if (onDepartmentChange) {
+      onDepartmentChange(dept);
+    }
   };
 
   const handleGenerateClick = () => {
@@ -99,7 +107,7 @@ const ControlPanel = ({ onGenerateClick, onExportClick }: ControlPanelProps) => 
                   ? "bg-secondary text-primary"
                   : "bg-white border border-gray-300 hover:bg-gray-100"
               }`}
-              onClick={() => setSelectedDepartment("all")}
+              onClick={() => handleDepartmentChange("all")}
             >
               All Departments
             </button>
@@ -111,7 +119,7 @@ const ControlPanel = ({ onGenerateClick, onExportClick }: ControlPanelProps) => 
                     ? departmentColors[dept]
                     : "bg-white border border-gray-300 hover:bg-gray-100"
                 }`}
-                onClick={() => setSelectedDepartment(dept)}
+                onClick={() => handleDepartmentChange(dept)}
               >
                 {dept}
               </button>

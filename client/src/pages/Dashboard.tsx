@@ -7,9 +7,11 @@ import ConflictChecker from "@/components/ui/conflict-checker";
 import { exportTimetable } from "@/lib/export-utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ExportDialog from "@/components/dialogs/ExportDialog";
+import { Department } from "@shared/schema";
 
 const Dashboard = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState<Department | "all">("all");
   const timetableRef = useRef<HTMLDivElement>(null);
   
   const { data: activeTimetable } = useQuery({
@@ -27,6 +29,10 @@ const Dashboard = () => {
 
   const handleExportClick = () => {
     setShowExportDialog(true);
+  };
+  
+  const handleDepartmentChange = (dept: Department | "all") => {
+    setSelectedDepartment(dept);
   };
 
   const handleExport = async (format: 'pdf' | 'csv' | 'image') => {
@@ -49,6 +55,7 @@ const Dashboard = () => {
       <ControlPanel 
         onGenerateClick={handleGenerateClick} 
         onExportClick={handleExportClick} 
+        onDepartmentChange={handleDepartmentChange}
       />
     
       <div className="flex flex-col md:flex-row gap-6">
@@ -60,7 +67,10 @@ const Dashboard = () => {
         {/* Timetable */}
         <div className="w-full md:w-3/4 lg:w-4/5" ref={timetableRef}>
           <div className="timetable-container">
-            <TimetableView timetableId={activeTimetable?.id} />
+            <TimetableView 
+              timetableId={activeTimetable?.id} 
+              selectedDepartment={selectedDepartment}
+            />
           </div>
         </div>
       </div>

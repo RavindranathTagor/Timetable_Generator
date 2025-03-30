@@ -4,6 +4,7 @@ import { Department, ScheduledClass, Course, Instructor, Classroom } from "@shar
 
 interface TimetableViewProps {
   timetableId?: number;
+  selectedDepartment?: Department | "all";
 }
 
 interface ScheduledClassWithDetails extends ScheduledClass {
@@ -12,7 +13,7 @@ interface ScheduledClassWithDetails extends ScheduledClass {
   classroom?: Classroom;
 }
 
-const TimetableView = ({ timetableId }: TimetableViewProps) => {
+const TimetableView = ({ timetableId, selectedDepartment = "all" }: TimetableViewProps) => {
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
   const { data: timetable } = useQuery({
@@ -86,12 +87,28 @@ const TimetableView = ({ timetableId }: TimetableViewProps) => {
     ECO: "bg-[#ccffff]",
   };
 
-  // Mock function to get classes for a specific time slot and day
+  // Get filtered classes based on selected department
+  const getFilteredClasses = () => {
+    if (!enhancedScheduledClasses.length) return [];
+    
+    if (selectedDepartment === "all") {
+      return enhancedScheduledClasses;
+    }
+    
+    return enhancedScheduledClasses.filter(cls => 
+      cls.course?.department === selectedDepartment
+    );
+  };
+  
+  // Get classes for a specific time slot and day
   const getClassesForTimeSlot = (timeSlot: string, day: string) => {
     if (!enhancedScheduledClasses.length) return [];
     
+    // Get classes filtered by department if needed
+    const filteredClasses = getFilteredClasses();
+    
     // This is a simplified version - in a real app, you would parse the time and day properly
-    return enhancedScheduledClasses.filter(cls => {
+    return filteredClasses.filter(cls => {
       const dayMatches = cls.day === day;
       const timeMatches = 
         (timeSlot === "9:00 - 10:00" && cls.startTime?.includes("9:00")) ||
@@ -110,9 +127,6 @@ const TimetableView = ({ timetableId }: TimetableViewProps) => {
   const handleClassClick = (scheduledClass: ScheduledClassWithDetails) => {
     alert(`Course: ${scheduledClass.course?.code} - ${scheduledClass.course?.name}\nInstructor: ${scheduledClass.instructor?.name}\nRoom: ${scheduledClass.classroom?.name}`);
   };
-
-  // Sample data for physics department schedule
-  const physicsCourses = courses?.filter(course => course.department === "PHY") || [];
   
   return (
     <div className="w-full">
@@ -230,79 +244,160 @@ const TimetableView = ({ timetableId }: TimetableViewProps) => {
       </div>
 
       {/* Department-specific schedules */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
-        {/* Physics Department Schedule */}
-        <div className="bg-white shadow-md rounded-lg p-4">
-          <h3 className="text-md font-medium mb-3 flex items-center">
-            <span className="w-3 h-3 rounded-full bg-[#ffcccc] mr-2"></span>
-            Physics Department Schedule
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-xs">
-              <thead>
-                <tr>
-                  <th className="border bg-gray-50 p-1 text-left">Course Code</th>
-                  <th className="border bg-gray-50 p-1 text-left">Schedule</th>
-                  <th className="border bg-gray-50 p-1 text-left">Room</th>
-                  <th className="border bg-gray-50 p-1 text-left">Instructor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {physicsCourses.map(course => {
-                  const courseClasses = enhancedScheduledClasses.filter(sc => sc.courseId === course.id);
-                  const instructor = instructors?.find(i => i.id === course.instructorId);
-                  
-                  return courseClasses.map((scheduledClass, index) => (
-                    <tr key={`${course.id}-${index}`}>
-                      <td className="border p-1">{course.code}</td>
-                      <td className="border p-1">{`${scheduledClass.day} ${scheduledClass.startTime}-${scheduledClass.endTime}`}</td>
-                      <td className="border p-1">{scheduledClass.classroom?.name}</td>
-                      <td className="border p-1">{instructor?.name}</td>
-                    </tr>
-                  ));
-                })}
-              </tbody>
-            </table>
+      {selectedDepartment !== "all" ? (
+        // Show one department table when a specific department is selected
+        <div className="mt-6">
+          <div className="bg-white shadow-md rounded-lg p-4">
+            <h3 className="text-md font-medium mb-3 flex items-center">
+              <span className={`w-3 h-3 rounded-full ${departmentColors[selectedDepartment as Department]} mr-2`}></span>
+              {selectedDepartment} Department Schedule
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr>
+                    <th className="border bg-gray-50 p-1 text-left">Course Code</th>
+                    <th className="border bg-gray-50 p-1 text-left">Schedule</th>
+                    <th className="border bg-gray-50 p-1 text-left">Room</th>
+                    <th className="border bg-gray-50 p-1 text-left">Instructor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses
+                    ?.filter(course => course.department === selectedDepartment)
+                    .map(course => {
+                      const courseClasses = enhancedScheduledClasses.filter(sc => sc.courseId === course.id);
+                      const instructor = instructors?.find(i => i.id === course.instructorId);
+                      
+                      return courseClasses.map((scheduledClass, index) => (
+                        <tr key={`${course.id}-${index}`}>
+                          <td className="border p-1">{course.code}</td>
+                          <td className="border p-1">{`${scheduledClass.day} ${scheduledClass.startTime}-${scheduledClass.endTime}`}</td>
+                          <td className="border p-1">{scheduledClass.classroom?.name}</td>
+                          <td className="border p-1">{instructor?.name}</td>
+                        </tr>
+                      ));
+                    })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+      ) : (
+        // Show three department tables when showing all departments
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+          {/* Physics Department Schedule */}
+          <div className="bg-white shadow-md rounded-lg p-4">
+            <h3 className="text-md font-medium mb-3 flex items-center">
+              <span className="w-3 h-3 rounded-full bg-[#ffcccc] mr-2"></span>
+              Physics Department Schedule
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr>
+                    <th className="border bg-gray-50 p-1 text-left">Course Code</th>
+                    <th className="border bg-gray-50 p-1 text-left">Schedule</th>
+                    <th className="border bg-gray-50 p-1 text-left">Room</th>
+                    <th className="border bg-gray-50 p-1 text-left">Instructor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses
+                    ?.filter(course => course.department === "PHY")
+                    .map(course => {
+                      const courseClasses = enhancedScheduledClasses.filter(sc => sc.courseId === course.id);
+                      const instructor = instructors?.find(i => i.id === course.instructorId);
+                      
+                      return courseClasses.map((scheduledClass, index) => (
+                        <tr key={`${course.id}-${index}`}>
+                          <td className="border p-1">{course.code}</td>
+                          <td className="border p-1">{`${scheduledClass.day} ${scheduledClass.startTime}-${scheduledClass.endTime}`}</td>
+                          <td className="border p-1">{scheduledClass.classroom?.name}</td>
+                          <td className="border p-1">{instructor?.name}</td>
+                        </tr>
+                      ));
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        {/* Chemistry Department Schedule */}
-        <div className="bg-white shadow-md rounded-lg p-4">
-          <h3 className="text-md font-medium mb-3 flex items-center">
-            <span className="w-3 h-3 rounded-full bg-[#ccffcc] mr-2"></span>
-            Chemistry Department Schedule
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-xs">
-              <thead>
-                <tr>
-                  <th className="border bg-gray-50 p-1 text-left">Course Code</th>
-                  <th className="border bg-gray-50 p-1 text-left">Schedule</th>
-                  <th className="border bg-gray-50 p-1 text-left">Room</th>
-                  <th className="border bg-gray-50 p-1 text-left">Instructor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {courses
-                  ?.filter(course => course.department === "CHM")
-                  .map(course => {
-                    const courseClasses = enhancedScheduledClasses.filter(sc => sc.courseId === course.id);
-                    const instructor = instructors?.find(i => i.id === course.instructorId);
-                    
-                    return courseClasses.map((scheduledClass, index) => (
-                      <tr key={`${course.id}-${index}`}>
-                        <td className="border p-1">{course.code}</td>
-                        <td className="border p-1">{`${scheduledClass.day} ${scheduledClass.startTime}-${scheduledClass.endTime}`}</td>
-                        <td className="border p-1">{scheduledClass.classroom?.name}</td>
-                        <td className="border p-1">{instructor?.name}</td>
-                      </tr>
-                    ));
-                  })}
-              </tbody>
-            </table>
+          {/* Chemistry Department Schedule */}
+          <div className="bg-white shadow-md rounded-lg p-4">
+            <h3 className="text-md font-medium mb-3 flex items-center">
+              <span className="w-3 h-3 rounded-full bg-[#ccffcc] mr-2"></span>
+              Chemistry Department Schedule
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr>
+                    <th className="border bg-gray-50 p-1 text-left">Course Code</th>
+                    <th className="border bg-gray-50 p-1 text-left">Schedule</th>
+                    <th className="border bg-gray-50 p-1 text-left">Room</th>
+                    <th className="border bg-gray-50 p-1 text-left">Instructor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses
+                    ?.filter(course => course.department === "CHM")
+                    .map(course => {
+                      const courseClasses = enhancedScheduledClasses.filter(sc => sc.courseId === course.id);
+                      const instructor = instructors?.find(i => i.id === course.instructorId);
+                      
+                      return courseClasses.map((scheduledClass, index) => (
+                        <tr key={`${course.id}-${index}`}>
+                          <td className="border p-1">{course.code}</td>
+                          <td className="border p-1">{`${scheduledClass.day} ${scheduledClass.startTime}-${scheduledClass.endTime}`}</td>
+                          <td className="border p-1">{scheduledClass.classroom?.name}</td>
+                          <td className="border p-1">{instructor?.name}</td>
+                        </tr>
+                      ));
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Computer & Electrical Sciences Department Schedule */}
+          <div className="bg-white shadow-md rounded-lg p-4">
+            <h3 className="text-md font-medium mb-3 flex items-center">
+              <span className="w-3 h-3 rounded-full bg-[#e6ccff] mr-2"></span>
+              Computer & Electrical Sciences Schedule
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr>
+                    <th className="border bg-gray-50 p-1 text-left">Course Code</th>
+                    <th className="border bg-gray-50 p-1 text-left">Schedule</th>
+                    <th className="border bg-gray-50 p-1 text-left">Room</th>
+                    <th className="border bg-gray-50 p-1 text-left">Instructor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses
+                    ?.filter(course => course.department === "CES")
+                    .map(course => {
+                      const courseClasses = enhancedScheduledClasses.filter(sc => sc.courseId === course.id);
+                      const instructor = instructors?.find(i => i.id === course.instructorId);
+                      
+                      return courseClasses.map((scheduledClass, index) => (
+                        <tr key={`${course.id}-${index}`}>
+                          <td className="border p-1">{course.code}</td>
+                          <td className="border p-1">{`${scheduledClass.day} ${scheduledClass.startTime}-${scheduledClass.endTime}`}</td>
+                          <td className="border p-1">{scheduledClass.classroom?.name}</td>
+                          <td className="border p-1">{instructor?.name}</td>
+                        </tr>
+                      ));
+                    })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
