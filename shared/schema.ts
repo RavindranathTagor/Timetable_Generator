@@ -77,6 +77,11 @@ export const insertClassroomSchema = createInsertSchema(classrooms).omit({ id: t
 export type InsertClassroom = z.infer<typeof insertClassroomSchema>;
 export type Classroom = typeof classrooms.$inferSelect;
 
+// Define the CSE sections
+export const cseSections = ["A", "B", "C"] as const;
+export const cseSectionSchema = z.enum(cseSections);
+export type CseSection = z.infer<typeof cseSectionSchema>;
+
 // Define scheduled class table
 export const scheduledClasses = pgTable("scheduled_classes", {
   id: serial("id").primaryKey(),
@@ -87,6 +92,7 @@ export const scheduledClasses = pgTable("scheduled_classes", {
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),
   timetableId: integer("timetable_id").notNull(),
+  section: text("section"), // Optional section identifier (A, B, C) for CSE department
 });
 
 export const insertScheduledClassSchema = createInsertSchema(scheduledClasses).omit({ id: true });
