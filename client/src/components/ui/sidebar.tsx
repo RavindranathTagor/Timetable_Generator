@@ -47,14 +47,6 @@ const Sidebar = ({ activeTimetableId }: SidebarProps) => {
       <h2 className="text-lg font-medium mb-3">Schedule Metadata</h2>
 
       <div className="mb-4">
-        <h3 className="font-medium text-sm text-gray-500 mb-2">Status</h3>
-        <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full bg-[#4CAF50] mr-2"></span>
-          <span className="text-sm">Generated successfully</span>
-        </div>
-      </div>
-
-      <div className="mb-4">
         <h3 className="font-medium text-sm text-gray-500 mb-2">Statistics</h3>
         <ul className="text-sm space-y-1">
           <li className="flex justify-between">
