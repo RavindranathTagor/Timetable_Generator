@@ -8,36 +8,36 @@ const Header = () => {
   });
 
   return (
-    <header className="bg-primary text-white shadow-md sticky top-0 z-50">
+    <header className="bg-primary text-white shadow-md sticky top-0 z-50 border-b-4 border-[#AA0000]">
       <div className="container mx-auto px-4 py-2 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <img src={logo} alt="IISERB Logo" className="h-10 w-10 rounded-full" />
+          <img src={logo} alt="IISERB Logo" className="h-12 w-12 rounded-full border-2 border-white" />
           <h1 className="text-xl font-bold">IISERB Timetable Generator</h1>
         </div>
         <nav>
           <ul className="flex space-x-6">
             <li>
-              <Link href="/" className="hover:text-secondary">
+              <Link href="/" className="hover:text-[#ffcccc] transition-colors">
                 Dashboard
               </Link>
             </li>
             <li>
-              <Link href="/class-timetable" className="hover:text-secondary">
+              <Link href="/class-timetable" className="hover:text-[#ffcccc] transition-colors">
                 Class Timetable
               </Link>
             </li>
             <li>
-              <Link href="/generate" className="hover:text-secondary">
+              <Link href="/generate" className="hover:text-[#ffcccc] transition-colors">
                 Generate
               </Link>
             </li>
             <li>
-              <Link href="/constraints" className="hover:text-secondary">
+              <Link href="/constraints" className="hover:text-[#ffcccc] transition-colors">
                 Constraints
               </Link>
             </li>
             <li>
-              <Link href="/settings" className="hover:text-secondary">
+              <Link href="/settings" className="hover:text-[#ffcccc] transition-colors">
                 Settings
               </Link>
             </li>
