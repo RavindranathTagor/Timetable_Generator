@@ -20,6 +20,11 @@ const Header = () => {
               </Link>
             </li>
             <li>
+              <Link href="/class-timetable">
+                <a className="hover:text-secondary">Class Timetable</a>
+              </Link>
+            </li>
+            <li>
               <Link href="/generate">
                 <a className="hover:text-secondary">Generate</a>
               </Link>

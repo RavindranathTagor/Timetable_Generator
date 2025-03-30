@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Generate from "@/pages/Generate";
 import Constraints from "@/pages/Constraints";
 import Settings from "@/pages/Settings";
+import ClassTimetable from "@/pages/ClassTimetable";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/generate" component={Generate} />
       <Route path="/constraints" component={Constraints} />
       <Route path="/settings" component={Settings} />
+      <Route path="/class-timetable" component={ClassTimetable} />
       <Route component={NotFound} />
     </Switch>
   );
