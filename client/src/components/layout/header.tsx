@@ -22,27 +22,27 @@ const Header = () => {
           <ul className="flex space-x-6">
             <li>
               <Link href="/">
-                <a className="hover:text-secondary">Dashboard</a>
+                <span className="hover:text-secondary">Dashboard</span>
               </Link>
             </li>
             <li>
               <Link href="/generate">
-                <a className="hover:text-secondary">Generate</a>
+                <span className="hover:text-secondary">Generate</span>
               </Link>
             </li>
             <li>
               <Link href="/constraints">
-                <a className="hover:text-secondary">Constraints</a>
+                <span className="hover:text-secondary">Constraints</span>
               </Link>
             </li>
             <li>
               <Link href="/schedules">
-                <a className="hover:text-secondary">Schedules</a>
+                <span className="hover:text-secondary">Schedules</span>
               </Link>
             </li>
             <li>
               <Link href="/settings">
-                <a className="hover:text-secondary">Settings</a>
+                <span className="hover:text-secondary">Settings</span>
               </Link>
             </li>
           </ul>
