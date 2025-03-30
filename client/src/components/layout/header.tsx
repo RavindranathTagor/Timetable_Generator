@@ -12,7 +12,10 @@ const Header = () => {
       <div className="container mx-auto px-4 py-2 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <img src={logo} alt="IISERB Logo" className="h-12 w-12 rounded-full border-2 border-[#2B2F8E]" />
-          <h1 className="text-xl font-bold">IISERB Timetable Generator</h1>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold">IISER Bhopal Timetable</h1>
+            <p className="text-xs text-gray-600">INDIAN INSTITUTE OF SCIENCE EDUCATION AND RESEARCH BHOPAL</p>
+          </div>
         </div>
         <nav>
           <ul className="flex space-x-6">
