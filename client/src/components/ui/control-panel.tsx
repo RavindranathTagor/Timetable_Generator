@@ -15,7 +15,6 @@ const ControlPanel = ({ onGenerateClick, onExportClick, onDepartmentChange }: Co
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedDepartment, setSelectedDepartment] = useState<Department | "all">("all");
-  const [viewOption, setViewOption] = useState<"weekly" | "daily" | "list">("weekly");
 
   const departmentColors: Record<Department, string> = {
     PHY: "bg-[#ffcccc]",
@@ -52,7 +51,7 @@ const ControlPanel = ({ onGenerateClick, onExportClick, onDepartmentChange }: Co
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h2 className="text-lg font-medium mb-3">Schedule Controls</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -124,45 +123,6 @@ const ControlPanel = ({ onGenerateClick, onExportClick, onDepartmentChange }: Co
                 {dept}
               </button>
             ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-medium mb-3">View Options</h2>
-          <div className="flex space-x-4">
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="weekly"
-                name="viewOption"
-                className="mr-2"
-                checked={viewOption === "weekly"}
-                onChange={() => setViewOption("weekly")}
-              />
-              <label htmlFor="weekly">Weekly</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="daily"
-                name="viewOption"
-                className="mr-2"
-                checked={viewOption === "daily"}
-                onChange={() => setViewOption("daily")}
-              />
-              <label htmlFor="daily">Daily</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="list"
-                name="viewOption"
-                className="mr-2"
-                checked={viewOption === "list"}
-                onChange={() => setViewOption("list")}
-              />
-              <label htmlFor="list">List</label>
-            </div>
           </div>
         </div>
       </div>

@@ -11,11 +11,6 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <h1 className="text-xl font-bold">IISERB Timetable Generator</h1>
-          {activeTimetable && (
-            <span className="ml-4 bg-secondary text-primary text-xs px-2 py-1 rounded">
-              {activeTimetable.semester}
-            </span>
-          )}
         </div>
         <nav>
           <ul className="flex space-x-6">
