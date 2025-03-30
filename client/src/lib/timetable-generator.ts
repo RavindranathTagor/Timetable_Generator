@@ -148,18 +148,28 @@ export const generateTimetable = async (options: TimetableGeneratorOptions): Pro
     // Try to assign the course to consecutive time slots on the same day if possible
     let assigned = false;
     
+    // Create a randomized order of days to better distribute classes across the week
+    // This will prevent the algorithm from always filling Monday first
+    const shuffledDays = [...weekDays].sort(() => Math.random() - 0.5);
+    
     // First try consecutive slots on the same day
     for (const room of suitableRooms) {
       if (assigned) break;
       
-      for (const day of weekDays) {
+      for (const day of shuffledDays) {
         if (assigned) break;
         
-        for (let i = 0; i < timeSlots.length - slotsNeeded + 1; i++) {
+        // Randomize the starting slot position to avoid always starting early in the day
+        const slotIndices = Array.from(
+          { length: timeSlots.length - slotsNeeded + 1 }, 
+          (_, i) => i
+        ).sort(() => Math.random() - 0.5);
+        
+        for (const startIdx of slotIndices) {
           // Check if all consecutive slots are available
           let allAvailable = true;
           for (let j = 0; j < slotsNeeded; j++) {
-            const slot = { day, timeSlot: timeSlots[i + j] };
+            const slot = { day, timeSlot: timeSlots[startIdx + j] };
             if (!isSlotAvailable(course, slot, room.id)) {
               allAvailable = false;
               break;
@@ -169,7 +179,7 @@ export const generateTimetable = async (options: TimetableGeneratorOptions): Pro
           if (allAvailable) {
             // Assign this course to these slots
             for (let j = 0; j < slotsNeeded; j++) {
-              const slot = { day, timeSlot: timeSlots[i + j] };
+              const slot = { day, timeSlot: timeSlots[startIdx + j] };
               
               // Update assignments
               if (!instructorAssignments[course.instructorId]) {
@@ -191,7 +201,7 @@ export const generateTimetable = async (options: TimetableGeneratorOptions): Pro
               const startTime = slot.timeSlot.split('-')[0].trim();
               const endTime = j === slotsNeeded - 1 
                 ? slot.timeSlot.split('-')[1].trim() 
-                : timeSlots[i + j + 1].split('-')[0].trim();
+                : timeSlots[startIdx + j + 1].split('-')[0].trim();
               
               scheduledClasses.push({
                 id: 0, // Will be assigned by the backend
@@ -212,14 +222,17 @@ export const generateTimetable = async (options: TimetableGeneratorOptions): Pro
       }
     }
     
-    // If not assigned with consecutive slots, try individual slots
+    // If not assigned with consecutive slots, try individual slots across different days
     if (!assigned) {
       let assignedSlots = 0;
+      
+      // Shuffle all slots to distribute classes better
+      const shuffledSlots = [...allSlots].sort(() => Math.random() - 0.5);
       
       for (const room of suitableRooms) {
         if (assignedSlots >= slotsNeeded) break;
         
-        for (const slot of allSlots) {
+        for (const slot of shuffledSlots) {
           if (assignedSlots >= slotsNeeded) break;
           
           if (isSlotAvailable(course, slot, room.id)) {
