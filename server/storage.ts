@@ -105,14 +105,42 @@ export class MemStorage implements IStorage {
   private initializeSampleData() {
     // Sample instructors
     const sampleInstructors: InsertInstructor[] = [
+      // Chemistry Department
       { name: "Dr. P. Verma", department: "CHM", email: "p.verma@iiserb.ac.in" },
+      { name: "Dr. K. Mishra", department: "CHM", email: "k.mishra@iiserb.ac.in" },
+      { name: "Dr. J. Roy", department: "CHM", email: "j.roy@iiserb.ac.in" },
+      
+      // Physics Department
       { name: "Dr. R. Sharma", department: "PHY", email: "r.sharma@iiserb.ac.in" },
       { name: "Dr. S. Kumar", department: "PHY", email: "s.kumar@iiserb.ac.in" },
       { name: "Dr. A. Gupta", department: "PHY", email: "a.gupta@iiserb.ac.in" },
       { name: "Dr. M. Patel", department: "PHY", email: "m.patel@iiserb.ac.in" },
       { name: "Dr. L. Singh", department: "PHY", email: "l.singh@iiserb.ac.in" },
-      { name: "Dr. K. Mishra", department: "CHM", email: "k.mishra@iiserb.ac.in" },
-      { name: "Dr. J. Roy", department: "CHM", email: "j.roy@iiserb.ac.in" }
+      
+      // Biology Department
+      { name: "Dr. N. Joshi", department: "BIO", email: "n.joshi@iiserb.ac.in" },
+      { name: "Dr. S. Bose", department: "BIO", email: "s.bose@iiserb.ac.in" },
+      { name: "Dr. P. Iyer", department: "BIO", email: "p.iyer@iiserb.ac.in" },
+      
+      // Mathematics Department
+      { name: "Dr. D. Chatterjee", department: "MTH", email: "d.chatterjee@iiserb.ac.in" },
+      { name: "Dr. A. Banerjee", department: "MTH", email: "a.banerjee@iiserb.ac.in" },
+      { name: "Dr. R. Pillai", department: "MTH", email: "r.pillai@iiserb.ac.in" },
+      
+      // Earth & Environmental Sciences Department
+      { name: "Dr. V. Tiwari", department: "EES", email: "v.tiwari@iiserb.ac.in" },
+      { name: "Dr. S. Saxena", department: "EES", email: "s.saxena@iiserb.ac.in" },
+      { name: "Dr. H. Malhotra", department: "EES", email: "h.malhotra@iiserb.ac.in" },
+      
+      // Computer & Electrical Sciences Department
+      { name: "Dr. R. Agarwal", department: "CES", email: "r.agarwal@iiserb.ac.in" },
+      { name: "Dr. S. Mehta", department: "CES", email: "s.mehta@iiserb.ac.in" },
+      { name: "Dr. T. Reddy", department: "CES", email: "t.reddy@iiserb.ac.in" },
+      
+      // Economics Department
+      { name: "Dr. A. Das", department: "ECO", email: "a.das@iiserb.ac.in" },
+      { name: "Dr. M. Sen", department: "ECO", email: "m.sen@iiserb.ac.in" },
+      { name: "Dr. P. Bhattacharya", department: "ECO", email: "p.bhattacharya@iiserb.ac.in" }
     ];
     
     sampleInstructors.forEach(instructor => this.createInstructor(instructor));
@@ -146,14 +174,42 @@ export class MemStorage implements IStorage {
     
     // Sample courses
     const sampleCourses: InsertCourse[] = [
+      // Chemistry courses
       { code: "CHM 111", name: "General Chemistry", department: "CHM", instructorId: 1, credits: 3, capacity: 50 },
-      { code: "PHY 101", name: "Mechanics", department: "PHY", instructorId: 2, credits: 4, capacity: 50 },
-      { code: "PHY 104", name: "Electromagnetism", department: "PHY", instructorId: 3, credits: 4, capacity: 40 },
-      { code: "PHY 306", name: "Quantum Physics I", department: "PHY", instructorId: 4, credits: 3, capacity: 30 },
-      { code: "PHY 407", name: "Solid State Physics", department: "PHY", instructorId: 5, credits: 3, capacity: 25 },
-      { code: "PHY 503", name: "Advanced Lab Techniques", department: "PHY", instructorId: 6, credits: 2, capacity: 20 },
-      { code: "CHM 206", name: "Organic Chemistry", department: "CHM", instructorId: 7, credits: 3, capacity: 40 },
-      { code: "CHM 252", name: "Analytical Methods", department: "CHM", instructorId: 8, credits: 3, capacity: 30 }
+      { code: "CHM 206", name: "Organic Chemistry", department: "CHM", instructorId: 2, credits: 3, capacity: 40 },
+      { code: "CHM 252", name: "Analytical Methods", department: "CHM", instructorId: 3, credits: 3, capacity: 30 },
+      
+      // Physics courses
+      { code: "PHY 101", name: "Mechanics", department: "PHY", instructorId: 4, credits: 4, capacity: 50 },
+      { code: "PHY 104", name: "Electromagnetism", department: "PHY", instructorId: 5, credits: 4, capacity: 40 },
+      { code: "PHY 306", name: "Quantum Physics I", department: "PHY", instructorId: 6, credits: 3, capacity: 30 },
+      { code: "PHY 407", name: "Solid State Physics", department: "PHY", instructorId: 7, credits: 3, capacity: 25 },
+      { code: "PHY 503", name: "Advanced Lab Techniques", department: "PHY", instructorId: 8, credits: 2, capacity: 20 },
+      
+      // Biology courses
+      { code: "BIO 101", name: "Cell Biology", department: "BIO", instructorId: 9, credits: 3, capacity: 45 },
+      { code: "BIO 205", name: "Genetics", department: "BIO", instructorId: 10, credits: 3, capacity: 35 },
+      { code: "BIO 304", name: "Molecular Biology", department: "BIO", instructorId: 11, credits: 4, capacity: 30 },
+      
+      // Mathematics courses
+      { code: "MTH 101", name: "Calculus I", department: "MTH", instructorId: 12, credits: 3, capacity: 50 },
+      { code: "MTH 203", name: "Linear Algebra", department: "MTH", instructorId: 13, credits: 3, capacity: 40 },
+      { code: "MTH 305", name: "Differential Equations", department: "MTH", instructorId: 14, credits: 3, capacity: 35 },
+      
+      // Earth & Environmental Sciences courses
+      { code: "EES 101", name: "Earth Systems", department: "EES", instructorId: 15, credits: 3, capacity: 45 },
+      { code: "EES 204", name: "Geological Processes", department: "EES", instructorId: 16, credits: 3, capacity: 35 },
+      { code: "EES 307", name: "Environmental Analysis", department: "EES", instructorId: 17, credits: 4, capacity: 30 },
+      
+      // Computer & Electrical Sciences courses
+      { code: "CES 101", name: "Programming Fundamentals", department: "CES", instructorId: 18, credits: 3, capacity: 45 },
+      { code: "CES 205", name: "Digital Systems", department: "CES", instructorId: 19, credits: 3, capacity: 40 },
+      { code: "CES 304", name: "Computer Architecture", department: "CES", instructorId: 20, credits: 3, capacity: 35 },
+      
+      // Economics courses
+      { code: "ECO 101", name: "Microeconomics", department: "ECO", instructorId: 21, credits: 3, capacity: 50 },
+      { code: "ECO 204", name: "Macroeconomics", department: "ECO", instructorId: 22, credits: 3, capacity: 45 },
+      { code: "ECO 307", name: "Econometrics", department: "ECO", instructorId: 23, credits: 3, capacity: 35 }
     ];
     
     sampleCourses.forEach(course => this.createCourse(course));
