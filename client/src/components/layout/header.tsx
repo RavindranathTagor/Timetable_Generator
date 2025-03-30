@@ -8,36 +8,36 @@ const Header = () => {
   });
 
   return (
-    <header className="bg-[#2B2F8E] text-white shadow-md sticky top-0 z-50 border-b-4 border-[#CC0000]">
+    <header className="bg-white text-black shadow-md sticky top-0 z-50 border-b-4 border-[#CC0000]">
       <div className="container mx-auto px-4 py-2 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <img src={logo} alt="IISERB Logo" className="h-12 w-12 rounded-full border-2 border-white" />
+          <img src={logo} alt="IISERB Logo" className="h-12 w-12 rounded-full border-2 border-[#2B2F8E]" />
           <h1 className="text-xl font-bold">IISERB Timetable Generator</h1>
         </div>
         <nav>
           <ul className="flex space-x-6">
             <li>
-              <Link href="/" className="hover:text-[#87CEEB] transition-colors">
+              <Link href="/" className="hover:text-[#2B2F8E] transition-colors">
                 Dashboard
               </Link>
             </li>
             <li>
-              <Link href="/class-timetable" className="hover:text-[#87CEEB] transition-colors">
+              <Link href="/class-timetable" className="hover:text-[#2B2F8E] transition-colors">
                 Class Timetable
               </Link>
             </li>
             <li>
-              <Link href="/generate" className="hover:text-[#87CEEB] transition-colors">
+              <Link href="/generate" className="hover:text-[#2B2F8E] transition-colors">
                 Generate
               </Link>
             </li>
             <li>
-              <Link href="/constraints" className="hover:text-[#87CEEB] transition-colors">
+              <Link href="/constraints" className="hover:text-[#2B2F8E] transition-colors">
                 Constraints
               </Link>
             </li>
             <li>
-              <Link href="/settings" className="hover:text-[#87CEEB] transition-colors">
+              <Link href="/settings" className="hover:text-[#2B2F8E] transition-colors">
                 Settings
               </Link>
             </li>
