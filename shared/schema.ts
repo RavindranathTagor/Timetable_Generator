@@ -10,7 +10,14 @@ export const timeSlots = [
 
 export const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const;
 
-export const departments = ["PHY", "CHM", "BIO", "MTH", "EES", "CES", "ECO"] as const;
+export const departments = [
+  // Science departments
+  "PHY", "CHM", "BIO", "MTH", 
+  // Engineering departments
+  "CSE", "ECE", "MECH", "CIVIL", "EEE", "IT",
+  // Other departments
+  "EES", "CES", "ECO"
+] as const;
 
 // Define the Department enum
 export const departmentSchema = z.enum(departments);

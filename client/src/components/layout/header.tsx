@@ -1,8 +1,9 @@
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { Timetable } from "@shared/schema";
 
 const Header = () => {
-  const { data: activeTimetable } = useQuery({
+  const { data: activeTimetable } = useQuery<Timetable>({
     queryKey: ["/api/timetables/active"],
   });
 
@@ -32,6 +33,11 @@ const Header = () => {
             <li>
               <Link href="/constraints">
                 <a className="hover:text-secondary">Constraints</a>
+              </Link>
+            </li>
+            <li>
+              <Link href="/schedules">
+                <a className="hover:text-secondary">Schedules</a>
               </Link>
             </li>
             <li>

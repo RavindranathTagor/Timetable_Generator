@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Generate from "@/pages/Generate";
 import Constraints from "@/pages/Constraints";
 import Settings from "@/pages/Settings";
+import Schedules from "@/pages/Schedules";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/generate" component={Generate} />
       <Route path="/constraints" component={Constraints} />
+      <Route path="/schedules" component={Schedules} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
