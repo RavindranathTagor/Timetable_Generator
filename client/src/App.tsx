@@ -5,19 +5,17 @@ import { Toaster } from "@/components/ui/toaster";
 import Layout from "@/components/layout/layout";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
-import Generate from "@/pages/Generate";
-import Constraints from "@/pages/Constraints";
-import Settings from "@/pages/Settings";
-import Schedules from "@/pages/Schedules";
+import Tasks from "@/pages/Tasks";
+import Projects from "@/pages/Projects";
+import Profile from "@/pages/Profile";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
-      <Route path="/generate" component={Generate} />
-      <Route path="/constraints" component={Constraints} />
-      <Route path="/schedules" component={Schedules} />
-      <Route path="/settings" component={Settings} />
+      <Route path="/tasks" component={Tasks} />
+      <Route path="/projects" component={Projects} />
+      <Route path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );

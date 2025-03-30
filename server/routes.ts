@@ -3,603 +3,379 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { 
-  insertCourseSchema, 
-  insertInstructorSchema, 
-  insertClassroomSchema,
-  insertConstraintSchema,
-  insertTimetableSchema,
-  insertScheduledClassSchema
+  insertTaskSchema,
+  insertUserSchema,
+  insertProjectSchema,
+  insertCommentSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API routes with /api prefix
   
-  // Course routes
-  app.get("/api/courses", async (req, res) => {
+  // User routes
+  app.get("/api/users", async (req, res) => {
     try {
-      const courses = await storage.getCourses();
-      res.json(courses);
+      const users = await storage.getUsers();
+      res.json(users);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch courses" });
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 
-  app.get("/api/courses/:id", async (req, res) => {
+  app.get("/api/users/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const course = await storage.getCourse(id);
-      if (!course) {
-        return res.status(404).json({ message: "Course not found" });
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
-      res.json(course);
+      res.json(user);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch course" });
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  app.post("/api/courses", async (req, res) => {
+  app.post("/api/users", async (req, res) => {
     try {
-      const courseData = insertCourseSchema.parse(req.body);
-      const course = await storage.createCourse(courseData);
-      res.status(201).json(course);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid course data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create course" });
-    }
-  });
-
-  app.put("/api/courses/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const courseData = insertCourseSchema.partial().parse(req.body);
-      const course = await storage.updateCourse(id, courseData);
-      res.json(course);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid course data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update course" });
-    }
-  });
-
-  app.delete("/api/courses/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteCourse(id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete course" });
-    }
-  });
-
-  // Instructor routes
-  app.get("/api/instructors", async (req, res) => {
-    try {
-      const instructors = await storage.getInstructors();
-      res.json(instructors);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch instructors" });
-    }
-  });
-
-  app.get("/api/instructors/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const instructor = await storage.getInstructor(id);
-      if (!instructor) {
-        return res.status(404).json({ message: "Instructor not found" });
-      }
-      res.json(instructor);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch instructor" });
-    }
-  });
-
-  app.post("/api/instructors", async (req, res) => {
-    try {
-      const instructorData = insertInstructorSchema.parse(req.body);
-      const instructor = await storage.createInstructor(instructorData);
-      res.status(201).json(instructor);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid instructor data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create instructor" });
-    }
-  });
-
-  app.put("/api/instructors/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const instructorData = insertInstructorSchema.partial().parse(req.body);
-      const instructor = await storage.updateInstructor(id, instructorData);
-      res.json(instructor);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid instructor data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update instructor" });
-    }
-  });
-
-  app.delete("/api/instructors/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteInstructor(id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete instructor" });
-    }
-  });
-
-  // Classroom routes
-  app.get("/api/classrooms", async (req, res) => {
-    try {
-      const classrooms = await storage.getClassrooms();
-      res.json(classrooms);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch classrooms" });
-    }
-  });
-
-  app.get("/api/classrooms/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const classroom = await storage.getClassroom(id);
-      if (!classroom) {
-        return res.status(404).json({ message: "Classroom not found" });
-      }
-      res.json(classroom);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch classroom" });
-    }
-  });
-
-  app.post("/api/classrooms", async (req, res) => {
-    try {
-      const classroomData = insertClassroomSchema.parse(req.body);
-      const classroom = await storage.createClassroom(classroomData);
-      res.status(201).json(classroom);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid classroom data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create classroom" });
-    }
-  });
-
-  app.put("/api/classrooms/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const classroomData = insertClassroomSchema.partial().parse(req.body);
-      const classroom = await storage.updateClassroom(id, classroomData);
-      res.json(classroom);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid classroom data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update classroom" });
-    }
-  });
-
-  app.delete("/api/classrooms/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteClassroom(id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete classroom" });
-    }
-  });
-
-  // Timetable routes
-  app.get("/api/timetables", async (req, res) => {
-    try {
-      const timetables = await storage.getTimetables();
-      res.json(timetables);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch timetables" });
-    }
-  });
-
-  app.get("/api/timetables/active", async (req, res) => {
-    try {
-      const timetable = await storage.getActiveTimetable();
-      if (!timetable) {
-        return res.status(404).json({ message: "No active timetable found" });
-      }
-      res.json(timetable);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch active timetable" });
-    }
-  });
-
-  app.get("/api/timetables/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const timetable = await storage.getTimetable(id);
-      if (!timetable) {
-        return res.status(404).json({ message: "Timetable not found" });
-      }
-      res.json(timetable);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch timetable" });
-    }
-  });
-
-  app.post("/api/timetables", async (req, res) => {
-    try {
-      const timetableData = insertTimetableSchema.parse(req.body);
-      const timetable = await storage.createTimetable(timetableData);
-      res.status(201).json(timetable);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid timetable data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create timetable" });
-    }
-  });
-
-  app.put("/api/timetables/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const timetableData = insertTimetableSchema.partial().parse(req.body);
-      const timetable = await storage.updateTimetable(id, timetableData);
-      res.json(timetable);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid timetable data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update timetable" });
-    }
-  });
-
-  app.delete("/api/timetables/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteTimetable(id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete timetable" });
-    }
-  });
-
-  app.post("/api/timetables/:id/activate", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const timetable = await storage.setActiveTimetable(id);
-      res.json(timetable);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to activate timetable" });
-    }
-  });
-
-  // Scheduled Class routes
-  app.get("/api/scheduled-classes", async (req, res) => {
-    try {
-      const timetableId = req.query.timetableId ? parseInt(req.query.timetableId as string) : undefined;
-      let scheduledClasses;
+      const userData = insertUserSchema.parse(req.body);
       
-      if (timetableId) {
-        scheduledClasses = await storage.getScheduledClassesByTimetable(timetableId);
+      // Check if username or email is already taken
+      const existingUsername = await storage.getUserByUsername(userData.username);
+      if (existingUsername) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
+      
+      const existingEmail = await storage.getUserByEmail(userData.email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email is already taken" });
+      }
+      
+      const user = await storage.createUser(userData);
+      res.status(201).json(user);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid user data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userData = insertUserSchema.partial().parse(req.body);
+      
+      // If username is being changed, check if it's available
+      if (userData.username) {
+        const existingUsername = await storage.getUserByUsername(userData.username);
+        if (existingUsername && existingUsername.id !== id) {
+          return res.status(400).json({ message: "Username is already taken" });
+        }
+      }
+      
+      // If email is being changed, check if it's available
+      if (userData.email) {
+        const existingEmail = await storage.getUserByEmail(userData.email);
+        if (existingEmail && existingEmail.id !== id) {
+          return res.status(400).json({ message: "Email is already taken" });
+        }
+      }
+      
+      const user = await storage.updateUser(id, userData);
+      res.json(user);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid user data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteUser(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+  
+  // Task routes
+  app.get("/api/tasks", async (req, res) => {
+    try {
+      let tasks;
+      
+      // Filter by project or user if provided
+      if (req.query.projectId) {
+        const projectId = parseInt(req.query.projectId as string);
+        tasks = await storage.getTasksByProject(projectId);
+      } else if (req.query.userId) {
+        const userId = parseInt(req.query.userId as string);
+        tasks = await storage.getTasksByUser(userId);
       } else {
-        scheduledClasses = await storage.getScheduledClasses();
+        tasks = await storage.getTasks();
       }
       
-      res.json(scheduledClasses);
+      res.json(tasks);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch scheduled classes" });
+      res.status(500).json({ message: "Failed to fetch tasks" });
     }
   });
 
-  app.post("/api/scheduled-classes", async (req, res) => {
+  app.get("/api/tasks/:id", async (req, res) => {
     try {
-      const scheduledClassData = insertScheduledClassSchema.parse(req.body);
-      const scheduledClass = await storage.createScheduledClass(scheduledClassData);
-      res.status(201).json(scheduledClass);
+      const id = parseInt(req.params.id);
+      const task = await storage.getTask(id);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch task" });
+    }
+  });
+
+  app.post("/api/tasks", async (req, res) => {
+    try {
+      const taskData = insertTaskSchema.parse(req.body);
+      const task = await storage.createTask(taskData);
+      res.status(201).json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid scheduled class data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid task data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create scheduled class" });
+      res.status(500).json({ message: "Failed to create task" });
     }
   });
 
-  app.put("/api/scheduled-classes/:id", async (req, res) => {
+  app.put("/api/tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const scheduledClassData = insertScheduledClassSchema.partial().parse(req.body);
-      const scheduledClass = await storage.updateScheduledClass(id, scheduledClassData);
-      res.json(scheduledClass);
+      const taskData = insertTaskSchema.partial().parse(req.body);
+      const task = await storage.updateTask(id, taskData);
+      res.json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid scheduled class data", errors: error.errors });
+        return res.status(400).json({ message: "Invalid task data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to update scheduled class" });
+      res.status(500).json({ message: "Failed to update task" });
     }
   });
 
-  app.delete("/api/scheduled-classes/:id", async (req, res) => {
+  app.delete("/api/tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteScheduledClass(id);
+      await storage.deleteTask(id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete scheduled class" });
-    }
-  });
-
-  // Batch delete scheduled classes by timetable
-  app.delete("/api/timetables/:id/scheduled-classes", async (req, res) => {
-    try {
-      const timetableId = parseInt(req.params.id);
-      await storage.deleteScheduledClassesByTimetable(timetableId);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete scheduled classes" });
-    }
-  });
-
-  // Constraint routes
-  app.get("/api/constraints", async (req, res) => {
-    try {
-      const constraints = await storage.getConstraints();
-      res.json(constraints);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch constraints" });
-    }
-  });
-
-  app.post("/api/constraints", async (req, res) => {
-    try {
-      const constraintData = insertConstraintSchema.parse(req.body);
-      const constraint = await storage.createConstraint(constraintData);
-      res.status(201).json(constraint);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid constraint data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create constraint" });
-    }
-  });
-
-  app.delete("/api/constraints/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteConstraint(id);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete constraint" });
-    }
-  });
-
-  // Timetable generation endpoint
-  app.post("/api/generate-timetable", async (req, res) => {
-    try {
-      const { name, semester } = req.body;
-      
-      if (!name || !semester) {
-        return res.status(400).json({ message: "Name and semester are required" });
-      }
-      
-      // Create a new timetable
-      const timetable = await storage.createTimetable({
-        name,
-        semester,
-        isActive: false
-      });
-      
-      // Get data needed for timetable generation
-      const courses = await storage.getCourses();
-      const instructors = await storage.getInstructors();
-      const classrooms = await storage.getClassrooms();
-      const constraints = await storage.getConstraints();
-      
-      // Import the timetable generator
-      const { generateTimetable } = await import('../client/src/lib/timetable-generator');
-      
-      // Generate scheduled classes
-      const generatorOptions = {
-        courses,
-        instructors, 
-        classrooms,
-        constraints,
-        timetableId: timetable.id
-      };
-      
-      const scheduledClasses = await generateTimetable(generatorOptions);
-      
-      // Save all generated scheduled classes
-      for (const scheduledClass of scheduledClasses) {
-        await storage.createScheduledClass({
-          courseId: scheduledClass.courseId,
-          instructorId: scheduledClass.instructorId,
-          classroomId: scheduledClass.classroomId,
-          day: scheduledClass.day,
-          startTime: scheduledClass.startTime,
-          endTime: scheduledClass.endTime,
-          timetableId: timetable.id,
-          section: scheduledClass.section
-        });
-      }
-      
-      // Return the created timetable
-      res.status(201).json(timetable);
-    } catch (error) {
-      console.error("Timetable generation error:", error);
-      res.status(500).json({ message: "Failed to generate timetable" });
-    }
-  });
-
-  // Timetable data endpoint - returns timetable with all related data (legacy endpoint)
-  app.get("/api/timetable-data/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      
-      // Get the timetable
-      const timetable = await storage.getTimetable(id);
-      if (!timetable) {
-        return res.status(404).json({ message: "Timetable not found" });
-      }
-      
-      // Get scheduled classes for this timetable
-      const scheduledClasses = await storage.getScheduledClassesByTimetable(id);
-      
-      // Get all courses, instructors, and classrooms for reference
-      const courses = await storage.getCourses();
-      const instructors = await storage.getInstructors();
-      const classrooms = await storage.getClassrooms();
-      
-      // Build detailed scheduled classes with referenced entities
-      const detailedClasses = scheduledClasses.map(scheduledClass => {
-        const course = courses.find(c => c.id === scheduledClass.courseId);
-        const instructor = instructors.find(i => i.id === scheduledClass.instructorId);
-        const classroom = classrooms.find(c => c.id === scheduledClass.classroomId);
-        
-        return {
-          ...scheduledClass,
-          course,
-          instructor,
-          classroom
-        };
-      });
-      
-      // Return complete timetable data
-      res.json({
-        ...timetable,
-        classes: detailedClasses
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch timetable data" });
+      res.status(500).json({ message: "Failed to delete task" });
     }
   });
   
-  // New endpoint - returns timetable with classes (TimetableWithClasses)
-  app.get("/api/timetables/withClasses/:id", async (req, res) => {
+  // Project routes
+  app.get("/api/projects", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      let projects;
       
-      // Get the timetable
-      const timetable = await storage.getTimetable(id);
-      if (!timetable) {
-        return res.status(404).json({ message: "Timetable not found" });
+      // Filter by owner if provided
+      if (req.query.userId) {
+        const userId = parseInt(req.query.userId as string);
+        projects = await storage.getProjectsByUser(userId);
+      } else {
+        projects = await storage.getProjects();
       }
       
-      // Get scheduled classes for this timetable
-      const scheduledClasses = await storage.getScheduledClassesByTimetable(id);
+      res.json(projects);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch projects" });
+    }
+  });
+
+  app.get("/api/projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.getProject(id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
       
-      // Get all courses, instructors, and classrooms for reference
-      const courses = await storage.getCourses();
-      const instructors = await storage.getInstructors();
-      const classrooms = await storage.getClassrooms();
+      // Get tasks for this project
+      const tasks = await storage.getTasksByProject(id);
       
-      // Build detailed scheduled classes with referenced entities
-      const detailedClasses = scheduledClasses.map(scheduledClass => {
-        const course = courses.find(c => c.id === scheduledClass.courseId);
-        const instructor = instructors.find(i => i.id === scheduledClass.instructorId);
-        const classroom = classrooms.find(c => c.id === scheduledClass.classroomId);
-        
-        return {
-          ...scheduledClass,
-          course,
-          instructor,
-          classroom
-        };
-      });
+      // Get owner details
+      const owner = await storage.getUser(project.ownerId);
       
-      // Return complete timetable data
+      // Return project with tasks and owner
       res.json({
-        ...timetable,
-        classes: detailedClasses
+        ...project,
+        tasks,
+        owner
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch timetable with classes" });
+      res.status(500).json({ message: "Failed to fetch project" });
+    }
+  });
+
+  app.post("/api/projects", async (req, res) => {
+    try {
+      const projectData = insertProjectSchema.parse(req.body);
+      const project = await storage.createProject(projectData);
+      res.status(201).json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create project" });
+    }
+  });
+
+  app.put("/api/projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const projectData = insertProjectSchema.partial().parse(req.body);
+      const project = await storage.updateProject(id, projectData);
+      res.json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update project" });
+    }
+  });
+
+  app.delete("/api/projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProject(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete project" });
     }
   });
   
-  // Get active timetable with classes
-  app.get("/api/timetables/withClasses", async (req, res) => {
+  // Comment routes
+  app.get("/api/comments", async (req, res) => {
     try {
-      // Get the active timetable
-      const timetable = await storage.getActiveTimetable();
-      if (!timetable) {
-        return res.status(404).json({ message: "No active timetable found" });
+      let comments;
+      
+      // Filter by task if provided
+      if (req.query.taskId) {
+        const taskId = parseInt(req.query.taskId as string);
+        comments = await storage.getCommentsByTask(taskId);
+      } else {
+        comments = await storage.getComments();
       }
       
-      // Get scheduled classes for this timetable
-      const scheduledClasses = await storage.getScheduledClassesByTimetable(timetable.id);
-      
-      // Get all courses, instructors, and classrooms for reference
-      const courses = await storage.getCourses();
-      const instructors = await storage.getInstructors();
-      const classrooms = await storage.getClassrooms();
-      
-      // Build detailed scheduled classes with referenced entities
-      const detailedClasses = scheduledClasses.map(scheduledClass => {
-        const course = courses.find(c => c.id === scheduledClass.courseId);
-        const instructor = instructors.find(i => i.id === scheduledClass.instructorId);
-        const classroom = classrooms.find(c => c.id === scheduledClass.classroomId);
-        
-        return {
-          ...scheduledClass,
-          course,
-          instructor,
-          classroom
-        };
-      });
-      
-      // Return complete timetable data
-      res.json({
-        ...timetable,
-        classes: detailedClasses
-      });
+      res.json(comments);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch active timetable with classes" });
+      res.status(500).json({ message: "Failed to fetch comments" });
     }
   });
 
-  // Check for timetable conflicts
-  app.post("/api/check-conflicts", async (req, res) => {
+  app.get("/api/comments/:id", async (req, res) => {
     try {
-      const { timetableId } = req.body;
-      
-      if (!timetableId) {
-        return res.status(400).json({ message: "Timetable ID is required" });
+      const id = parseInt(req.params.id);
+      const comment = await storage.getComment(id);
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
       }
-      
-      // Get scheduled classes for this timetable
-      const scheduledClasses = await storage.getScheduledClassesByTimetable(timetableId);
-      
-      if (scheduledClasses.length === 0) {
-        return res.json({
-          hasConflicts: false,
-          conflicts: {
-            instructorConflicts: [],
-            classroomConflicts: [],
-            studentConflicts: []
-          }
-        });
-      }
-      
-      // Import the conflict checker
-      const { checkConflicts } = await import('../client/src/lib/timetable-generator');
-      
-      // Check for conflicts using our implementation
-      const conflicts = checkConflicts(scheduledClasses);
-      
-      // Return the conflicts
-      res.json({
-        hasConflicts: Object.values(conflicts).some(arr => arr.length > 0),
-        conflicts
-      });
+      res.json(comment);
     } catch (error) {
-      console.error("Conflict checking error:", error);
-      res.status(500).json({ message: "Failed to check conflicts" });
+      res.status(500).json({ message: "Failed to fetch comment" });
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  app.post("/api/comments", async (req, res) => {
+    try {
+      const commentData = insertCommentSchema.parse(req.body);
+      const comment = await storage.createComment(commentData);
+      res.status(201).json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid comment data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create comment" });
+    }
+  });
+
+  app.put("/api/comments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const commentData = insertCommentSchema.partial().parse(req.body);
+      const comment = await storage.updateComment(id, commentData);
+      res.json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid comment data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update comment" });
+    }
+  });
+
+  app.delete("/api/comments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteComment(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+  
+  // Task with details endpoint
+  app.get("/api/tasks/:id/details", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const task = await storage.getTask(id);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      
+      // Get task details
+      const user = task.userId ? await storage.getUser(task.userId) : undefined;
+      const project = task.projectId ? await storage.getProject(task.projectId) : undefined;
+      const comments = await storage.getCommentsByTask(id);
+      
+      // Return task with details
+      res.json({
+        ...task,
+        user,
+        project,
+        comments
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch task details" });
+    }
+  });
+  
+  // Authentication routes
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      const user = await storage.getUserByUsername(username);
+      
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      
+      // In a real app, we would use proper authentication with tokens
+      // and not send back the password
+      const { password: _, ...userWithoutPassword } = user;
+      
+      res.json({ 
+        user: userWithoutPassword,
+        message: "Login successful"
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  return createServer(app);
 }
